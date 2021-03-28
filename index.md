@@ -1,37 +1,38 @@
-## Welcome to GitHub Pages
+## MIT AppInventor Proposal - Jesse Wang
 
-You can use the [editor on GitHub](https://github.com/wjesse/AppInventor-Proposal/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+#### Part 2:
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+In order to let the camera take pictures automatically, the component would need to implement the android camera api, instead of depending on the default camera application of the device as it does now. 
 
-### Markdown
+The new component I would implement is the non-visible `AutoCamera`. It would have a method `autoPicture` which, when called, would automatically take a picture facing the current direction (front facing or back facing). 
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+AutoCamera would have the property `delay`, which enables the user to set a parameter for the delay between a method call to `autoPicture` and the actual picture being taken. It would also inherit any properties that the existing Camera component has.
 
-```markdown
-Syntax highlighted code block
+##### Implementation:
 
-# Header 1
-## Header 2
-### Header 3
+To use the Android Camera API, we would need a new activity class `CameraHandler`, which would be defined in `appinventor-sources/appinventor/components/src/com/google/appinventor/components/runtime/CameraHandler.java`
 
-- Bulleted
-- List
+- CameraHandler first checks if there is an available camera using the function:
 
-1. Numbered
-2. List
+    `context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)`
 
-**Bold** and _Italic_ and `Code` text
+- If such a camera exists, create an instance of a camera variable using Camera.open()
 
-[Link](url) and ![Image](src)
-```
+- In order for the user to actually use this component, we must create a temporary SurfaceView variable.
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+- Next use the Android SDK’s takePicture(ShutterCallback, PictureCallback, PictureCallback, PictureCallback) method as our takePicture method, implementing the PictureCallback and ShutterCallback as needed. 
 
-### Jekyll Themes
+- We can also implement a method that utilises the ShutterCallback to play a camera sound when the camera actually takes the photo, call this method playSound.
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/wjesse/AppInventor-Proposal/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
 
-### Support or Contact
+The AutoCamera.java component, which is located in the source tree at `appinventor-sources/appinventor/components/src/com/google/appinventor/components/runtime/AutoCamera.java` should extend `AndroidNonvisibleComponent`.
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+It has the property:
+- `int delay`: default 0, `PropertyTypeConstants.PROPERTY_TYPE_INTEGER`
+
+And has the methods:
+- `void setDelay`: sets a value for `delay`
+- `int getDelay`: gets the value for `delay`
+- `String autoPicture`: takes a picture after `delay` seconds, returns the path of the picture
+
+The `autoPicture` method creates a `CountDownTimer` object to count down from `delay` seconds, and uses the `CameraHelper.takePicture(...)` method to actually take the picture. It also uses `CameraHelper.playSound(...)` to play a camera shutter sound when the picture is taken.
